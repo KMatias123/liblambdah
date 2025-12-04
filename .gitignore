@@ -12,3 +12,4 @@ _deps
 *.so
 *.dll
 .idea
+.cmake
