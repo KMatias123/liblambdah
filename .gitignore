@@ -13,3 +13,4 @@ _deps
 *.dll
 .idea
 .cmake
+logs/

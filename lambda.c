@@ -1,5 +1,7 @@
 #include "lambda.h"
 
+jboolean loaded = 0;
+
 static
 void
 JNICALL
@@ -16,20 +18,23 @@ JNICALL
     (*jvmti)->GetClassSignature(jvmti, klass, &classSignature, NULL);
 
     // When this class is loaded, Lambda is ready
-    if (strcmp(classSignature, "Lcom/lambda/core/Loader;") != 0)
+    if (strcmp(classSignature, "Lcom/lambda/core/Loader;") != 0 || loaded)
         return;
 
-    printf("[JVMIT] Loaded class %s\n", classSignature);
+    lambdah_init(jvmti, env);
+    loaded = 1;
 
-    lambda_o lambda = {0};
-    get_lambda(env, &lambda);
+    fprintf(stderr, "[liblambdah] Loaded class %s\n", classSignature);
 
-    const jobject logObj = lambda_log(env, &lambda);
+    lambda lambda = {0};
+    get_lambda(jvmti, env, &lambda);
 
-    const jclass loggerClass =
+    jobject logObj = (*env)->CallObjectMethod(env, lambda.instance, lambda.log);
+
+    jclass loggerClass =
         (*env)->FindClass(env, "org/apache/logging/log4j/Logger");
 
-    const jmethodID log =
+    jmethodID log =
         (*env)->GetMethodID(env, loggerClass, "info", SIG_FUNC(SIG_VOID, SIG_CLASS("java/lang/String")));
 
     const jstring str =
@@ -41,21 +46,17 @@ JNICALL
 JNIEXPORT
 jint
 JNICALL
-    // This entrypoint is called during the live phase of the VM. In this entrypoint,
-    // all the functions in the jvm can be used.
-    Agent_OnAttach(
+    // This entrypoint is called during the load of the VM.
+    // In this entrypoint, not all the functions of the VM can be used.
+    Agent_OnLoad(
         JavaVM* vm,
         char* options,
         void* reserved
 ) {
-    printf("[JVMTI] Agent loaded\n");
+    fprintf(stderr, "[liblambdah] Agent loaded\n");
 
     jvmtiEnv* jvmti = NULL;
     (*vm)->GetEnv(vm, (void**)&jvmti, JVMTI_VERSION_21);
-
-    // jvmtiCapabilities caps = {0};
-    // caps.can_generate_all_class_hook_events = 1;
-    // (*jvmti)->AddCapabilities(jvmti, &caps);
 
     jvmtiEventCallbacks cb = {0};
     cb.ClassPrepare = cbClassPrepare;
