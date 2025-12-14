@@ -26,10 +26,9 @@ JNICALL
 
     fprintf(stderr, "[liblambdah] Loaded class %s\n", classSignature);
 
-    lambda lambda = {0};
-    get_lambda(jvmti, env, &lambda);
+    const lambda *l = get_lambda(jvmti, env);
 
-    jobject logObj = (*env)->CallObjectMethod(env, lambda.instance, lambda.log);
+    jobject logObj = (*env)->CallObjectMethod(env, l->instance, l->log);
 
     jclass loggerClass =
         (*env)->FindClass(env, "org/apache/logging/log4j/Logger");
