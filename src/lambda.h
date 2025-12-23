@@ -277,7 +277,7 @@ jboolean
 /*
  * ===  FUNCTION  ======================================================================
  *         Name:    lambdah_init
- +*  Description:   Initializes various components for the interface.
+ *  Description:   Initializes various components for the interface.
  * =====================================================================================
  */
 void

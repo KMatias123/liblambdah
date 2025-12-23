@@ -14,3 +14,5 @@ _deps
 .idea
 .cmake
 logs/
+.cache
+/build

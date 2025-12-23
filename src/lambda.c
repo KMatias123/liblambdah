@@ -1,6 +1,9 @@
 #include "lambda.h"
+#include "jni.h"
+#include "jni_md.h"
+#include <stdbool.h>
 
-jboolean loaded = 0;
+jboolean loaded = false;
 
 static
 void
